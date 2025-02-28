@@ -6,7 +6,7 @@ load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
-GEMINI_MODEL = "gemini-pro"  # Changed from "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-1.5-pro"  # Changed from "gemini-2.0-flash"
 
 MAX_CONTEXT_LENGTH = 10
 ALLOWED_FILE_TYPES = [
