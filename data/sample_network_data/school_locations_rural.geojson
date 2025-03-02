@@ -1,0 +1,17 @@
+{
+"type": "FeatureCollection",
+"name": "school_locations_rural",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "name": "School_1", "population": 108 }, "geometry": { "type": "Point", "coordinates": [ 20.205844942958024, -1.254598811526375 ] } },
+{ "type": "Feature", "properties": { "name": "School_2", "population": 64 }, "geometry": { "type": "Point", "coordinates": [ 29.699098521619945, 4.507143064099161 ] } },
+{ "type": "Feature", "properties": { "name": "School_3", "population": 100 }, "geometry": { "type": "Point", "coordinates": [ 28.324426408004218, 2.319939418114051 ] } },
+{ "type": "Feature", "properties": { "name": "School_4", "population": 157 }, "geometry": { "type": "Point", "coordinates": [ 22.123391106782762, 0.986584841970366 ] } },
+{ "type": "Feature", "properties": { "name": "School_5", "population": 104 }, "geometry": { "type": "Point", "coordinates": [ 21.818249672071005, -3.439813595575635 ] } },
+{ "type": "Feature", "properties": { "name": "School_6", "population": 113 }, "geometry": { "type": "Point", "coordinates": [ 21.83404509853434, -3.440054796637973 ] } },
+{ "type": "Feature", "properties": { "name": "School_7", "population": 180 }, "geometry": { "type": "Point", "coordinates": [ 23.042422429595376, -4.419163878318005 ] } },
+{ "type": "Feature", "properties": { "name": "School_8", "population": 100 }, "geometry": { "type": "Point", "coordinates": [ 25.247564316322379, 3.661761457749352 ] } },
+{ "type": "Feature", "properties": { "name": "School_9", "population": 184 }, "geometry": { "type": "Point", "coordinates": [ 24.319450186421157, 1.011150117432088 ] } },
+{ "type": "Feature", "properties": { "name": "School_10", "population": 70 }, "geometry": { "type": "Point", "coordinates": [ 22.912291401980418, 2.080725777960454 ] } }
+]
+}
