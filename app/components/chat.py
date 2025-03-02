@@ -1,30 +1,20 @@
 # app/components/chat.py
 import streamlit as st
+import asyncio
 import os
 import tempfile
 import speech_recognition as sr
-from utils.network_analyzer import NetworkAnalyzer
-from utils.api_handler import WeatherHandler
+from utils.api_handler import GeminiHandler, WeatherHandler
 from utils.context_manager import ConversationManager
 from config.settings import ALLOWED_FILE_TYPES
-import pandas as pd
 
-def process_message(user_input: str, file_path: str, network_analyzer: NetworkAnalyzer,
-                   weather_handler: WeatherHandler, conversation_manager: ConversationManager) -> str:
-    try:
-        if "weather" in user_input.lower():
-            return weather_handler.get_weather_info(user_input)
-        elif file_path and file_path.endswith('.csv'):
-            df = pd.read_csv(file_path)
-            predictions = network_analyzer.predict_downtime(df[['bandwidth', 'latency', 'signal_strength']])
-            energy_metrics = network_analyzer.analyze_energy_efficiency(df)
-            return f"Network Analysis Results:\nPredicted Uptime: {predictions[0]:.2f}%\n" \
-                   f"Average Energy Usage: {energy_metrics['avg_energy_usage']:.2f}\n" \
-                   f"Total Energy Usage: {energy_metrics['total_energy_usage']:.2f}"
-        else:
-            return "Please provide network data in CSV format for analysis."
-    except Exception as e:
-        return f"Error processing request: {str(e)}"
+async def process_message(user_input: str, file_path: str, gemini_handler: GeminiHandler,
+                        weather_handler: WeatherHandler, conversation_manager: ConversationManager) -> str:
+    context = conversation_manager.get_context()
+    if "weather" in user_input.lower():
+        return weather_handler.get_weather_info(user_input)
+    else:
+        return await gemini_handler.generate_response(user_input, file_path, context)
 
 def handle_voice_input():
     r = sr.Recognizer()
@@ -38,7 +28,7 @@ def handle_voice_input():
             return text, tmp_file.name
     return None, None
 
-def chat_interface(network_analyzer: NetworkAnalyzer, weather_handler: WeatherHandler,
+def chat_interface(gemini_handler: GeminiHandler, weather_handler: WeatherHandler,
                   conversation_manager: ConversationManager):
     # Display chat history
     if "messages" not in st.session_state:
@@ -47,8 +37,8 @@ def chat_interface(network_analyzer: NetworkAnalyzer, weather_handler: WeatherHa
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Input mode selection
-    input_mode = st.session_state.get('input_mode', 'Text')
+    # Input mode selection from sidebar determines behavior
+    input_mode = st.session_state.input_mode
     user_input, file_path = None, None
 
     if input_mode == "Text":
@@ -57,21 +47,23 @@ def chat_interface(network_analyzer: NetworkAnalyzer, weather_handler: WeatherHa
         if st.button("Start Voice Input"):
             user_input, file_path = handle_voice_input()
     else:  # File
-        uploaded_file = st.file_uploader("Upload a CSV file", type=['csv'])
+        uploaded_file = st.file_uploader("Upload a file", type=ALLOWED_FILE_TYPES)
         if uploaded_file:
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as tmp_file:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp_file:
                 tmp_file.write(uploaded_file.getvalue())
                 file_path = tmp_file.name
-            user_input = "Please analyze this network data."
+            user_input = "Please analyze this file and provide insights."
 
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.markdown(user_input)
+            if file_path and file_path.lower().endswith(('png', 'jpg', 'jpeg')):
+                st.image(file_path)
 
         with st.spinner("Processing..."):
-            response = process_message(user_input, file_path, network_analyzer,
-                                    weather_handler, conversation_manager)
+            response = asyncio.run(process_message(user_input, file_path, gemini_handler,
+                                                  weather_handler, conversation_manager))
             conversation_manager.add_to_context(user_input, response)
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
